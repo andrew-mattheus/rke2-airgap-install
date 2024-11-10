@@ -1,13 +1,16 @@
-
 #!/bin/sh
-
 set -e
 
-# Define environment variables for local installation paths
-INSTALL_RKE2_TAR_PREFIX="/usr/local"         # Default installation path, can be set to /opt/rke2 if /usr/local is read-only
-INSTALL_RKE2_AGENT_IMAGES_DIR="/var/lib/rancher/rke2/agent/images"  # Path for airgap images
-INSTALL_RKE2_ARTIFACT_PATH="<LOCAL_PATH_TO_TARBALLS>"   # Replace with actual path to tarball directory
+# Source the configuration file
+CONFIG_FILE="rke2_config.sh"  # Set path to your config file if different
 
+# Check if the configuration file exists
+if [ -f "$CONFIG_FILE" ]; then
+    . "$CONFIG_FILE"
+else
+    echo "[ERROR] Configuration file not found: $CONFIG_FILE"
+    exit 1
+fi
 # Helper functions
 info() { echo "[INFO] " "$@"; }
 warn() { echo "[WARN] " "$@" >&2; }
