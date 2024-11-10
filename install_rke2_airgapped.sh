@@ -1,6 +1,13 @@
 #!/bin/sh
 set -e
 
+# Check if an argument is provided for INSTALL_RKE2_TYPE
+if [ -n "$1" ]; then
+    INSTALL_RKE2_TYPE="$1"
+else
+    INSTALL_RKE2_TYPE="server"  # Default to "server" if no argument is provided
+fi
+
 # Source the configuration file
 CONFIG_FILE="rke2_config.sh"
 if [ -f "$CONFIG_FILE" ]; then
@@ -9,6 +16,7 @@ else
     echo "[ERROR] Configuration file not found: $CONFIG_FILE"
     exit 1
 fi
+
 
 # Helper functions
 info() { echo "[INFO] " "$@"; }
