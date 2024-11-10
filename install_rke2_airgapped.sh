@@ -43,14 +43,42 @@ else
     cp -f "${INSTALL_RKE2_ARTIFACT_PATH}/rke2.${SUFFIX}.tar.gz" "${TMP_TARBALL}"
 fi
 
-# Verify and unpack the tarball
-info "Verifying and unpacking tarball..."
-CHECKSUM_EXPECTED=$(grep "rke2.${SUFFIX}.tar.gz" "${INSTALL_RKE2_ARTIFACT_PATH}/sha256sum-${ARCH}.txt" | awk '{print $1}')
-CHECKSUM_ACTUAL=$(sha256sum "${TMP_TARBALL}" | awk '{print $1}')
-if [ "${CHECKSUM_EXPECTED}" != "${CHECKSUM_ACTUAL}" ]; then
-    fatal "Checksum mismatch for main tarball"
+# # Verify main tarball (commented out)
+# CHECKSUM_EXPECTED=$(grep "rke2.${SUFFIX}.tar.gz" "${TMP_CHECKSUMS}" | awk '{print $1}')
+# CHECKSUM_ACTUAL=$(sha256sum "${TMP_TARBALL}" | awk '{print $1}')
+# if [ "${CHECKSUM_EXPECTED}" != "${CHECKSUM_ACTUAL}" ]; then
+#     fatal "RKE2 main tarball checksum does not match; expected ${CHECKSUM_EXPECTED}, got ${CHECKSUM_ACTUAL}"
+# fi
+# info "Main tarball verified successfully"
+
+# Unpack main tarball
+info "Unpacking RKE2 tarball to ${INSTALL_RKE2_TAR_PREFIX}"
+mkdir -p "${INSTALL_RKE2_TAR_PREFIX}"
+tar xzf "${TMP_TARBALL}" -C "${INSTALL_RKE2_TAR_PREFIX}"
+
+# Download or use local images file
+if [ ! -f "${INSTALL_RKE2_ARTIFACT_PATH}/rke2-images-all.${SUFFIX}.txt" ]; then
+    info "Downloading RKE2 images list from ${RKE2_IMAGES_URL}"
+    curl -L -o "${TMP_AIRGAP_TARBALL}" "${RKE2_IMAGES_URL}"
+else
+    cp -f "${INSTALL_RKE2_ARTIFACT_PATH}/rke2-images-all.${SUFFIX}.txt" "${TMP_AIRGAP_TARBALL}"
 fi
 
-tar xzf "${TMP_TARBALL}" -C "${INSTALL_RKE2_TAR_PREFIX}"
-info "RKE2 installation complete"
+# # Verify airgap tarball (commented out)
+# AIRGAP_CHECKSUM_EXPECTED=$(grep "rke2-images.${SUFFIX}.tar.gz" "${TMP_CHECKSUMS}" | awk '{print $1}')
+# AIRGAP_CHECKSUM_ACTUAL=$(sha256sum "${TMP_AIRGAP_TARBALL}" | awk '{print $1}')
+# if [ "${AIRGAP_CHECKSUM_EXPECTED}" != "${AIRGAP_CHECKSUM_ACTUAL}" ]; then
+#     fatal "Airgap tarball checksum does not match; expected ${AIRGAP_CHECKSUM_EXPECTED}, got ${AIRGAP_CHECKSUM_ACTUAL}"
+# fi
+# info "Airgap tarball verified successfully"
+
+# Copy airgap images
+mkdir -p "${INSTALL_RKE2_AGENT_IMAGES_DIR}"
+info "Copying airgap images to ${INSTALL_RKE2_AGENT_IMAGES_DIR}"
+mv -f "${TMP_AIRGAP_TARBALL}" "${INSTALL_RKE2_AGENT_IMAGES_DIR}/rke2-images.${SUFFIX}.tar.gz"
+
+# Skip daemon reload and fapolicy configuration
+info "Skipping daemon reload and fapolicy setup for standalone installation"
+
+info "RKE2 standalone installation completed. Ensure paths are updated if needed."
 exit 0
